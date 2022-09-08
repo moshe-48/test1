@@ -1,0 +1,57 @@
+import re
+
+def read_file():
+    f = open("log.txt","r")
+    lines = f.readlines();
+    return lines
+
+def get_names(lines):
+    names = set()
+    for line in lines:
+        name = re.findall("\D+:",line)
+        names.add(name[0])
+    return list(names)
+
+def is_available_line(line):
+    return line.find("I can") != -1
+
+def get_day_and_time(line):
+    words = line.split()
+    return words[-3] + "_" + words[-1]
+
+def print_result(name, time):
+    time = time.split("_")
+    day = time[0]
+    hour = time[1]
+    next_hour = str(int(hour.split(":")[0]) + 1) + ":00"
+    print ("We will meet at " + name + "'s house on " + day + " between " + hour + "-" + next_hour)
+
+def calculate_meeting_time():
+    lines = read_file()
+    names_count = len(get_names(lines))
+    available = {}
+    homes = {}
+
+    for line in lines:
+        if(is_available_line(line)):
+            key = get_day_and_time(line)
+            if not key in available:
+                available[key] = set()
+            available[key].add(line.split(":")[0])
+            if len(available[key]) == names_count and key in homes:
+                print_result(list(homes[key])[0], key)
+                return True
+        else:
+            key = get_day_and_time(line)
+            if not key in homes:
+                homes[key] = set()
+            homes[key].add(line.split(":")[0])
+            if key in available and len(available[key]) == names_count:
+                print_result(list(homes[key])[0], key)
+                return True
+                
+    return False
+
+if not calculate_meeting_time():
+    print("there is no option")
+
